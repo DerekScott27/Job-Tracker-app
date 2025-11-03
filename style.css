@@ -1,0 +1,19 @@
+form {
+    padding: 5px;
+} 
+
+body {
+    align-self: center;
+}
+
+#header {
+    padding: 5%;
+    text-align: center;
+}
+
+#forms{
+    display: grid;
+    justify-items: start;
+    
+
+}
