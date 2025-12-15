@@ -1,12 +1,28 @@
 {
   "name": "job-prep-tracker",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "type": "module",
+  "main": "server.js",
   "scripts": {
+    "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DerekScott27/Job-Tracker-app.git"
+  },
+  "bugs": {
+    "url": "https://github.com/DerekScott27/Job-Tracker-app/issues"
+  },
+  "homepage": "https://github.com/DerekScott27/Job-Tracker-app#readme",
+  "description": "",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "pg": "^8.16.3"
+  }
 }
