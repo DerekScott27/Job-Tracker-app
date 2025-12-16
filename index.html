@@ -16,29 +16,29 @@
 </header>
 
 <div id="forms">
-<form>
+<form id="job-form">
     <label for="company">Company</label>
-    <input type="text" id="company" name="company">
+    <input id="company" name="company" type="text" required minlength="2" >
 </form>
 <form>
     
     <label for="job-title">Job Title</label>
-    <input type="text" id="job-title" name="job-title">
+    <input type="text" id="job-title" name="job-title" required minlength="2" >
 
 </form>
 
 <form>
     <label for="job-link">Job URL</label>
-    <input type="text" id="job-link" name="job-link">
+    <input type="url" id="job-link" name="job-link" required>
 </form>
 
 <form>
     <label for="study-tasks">Study Tasks</label>
-    <input type="text" id="study-tasks" name="study-tasks">
+    <textarea id="study-tasks"  name="studyTasks" rows="4" ></textarea> 
 </form>
 <form>
     <label for="add-button"></label>
-    <button type="button" id="add-button" name="add-button">Add To Job Tracker</button>
+    <button type="submit" id="add-button" name="add-button">Add To Job Tracker</button>
 </form>
 </div>
  

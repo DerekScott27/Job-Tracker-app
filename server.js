@@ -68,11 +68,11 @@ function validateJob(body){
 
 app.post('/jobs', async  (req, res) => {
   console.log('Incoming body:', req.body);
-    const {company, jobTitle, jobLink, studyTasks} = req.body;
+    const { company, jobTitle, jobLink, studyTasks } = req.body;
 
     const errors = validateJob({company, jobTitle, jobLink});
     if(errors.length > 0){
-        return res.status(400).json({errors});
+        return res.status(400).json({ errors });
     }
 
 
