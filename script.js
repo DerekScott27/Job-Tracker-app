@@ -1,95 +1,135 @@
-const jobs = [];
+// Wrapped all of the existing code inside this event listener
+window.addEventListener('DOMContentLoaded', (event) => {
+    
+    // 1. GLOBAL VARIABLES AND STATE
+    const jobs = [];
+    const form = document.getElementById('job-form');
+    const button = document.getElementById('add-button');
+    const errorBox = document.getElementById('error-box');
 
+    // 2. CORE FUNCTIONS
+    // Create a new function to display array items on webpage
+    function jobUpdater() {
+        console.log('jobUpdater called. Current jobs:', jobs);
+        const listDiv = document.getElementById("list-div");
+        listDiv.innerHTML = ""; // Clears it to prevent duplication
+        const ul = document.createElement("ul");
+        
+        console.log(jobs);
+        jobs.forEach(function(job) {
+            const li = document.createElement("li");
+            li.textContent = `${job.company} - ${job.jobTitle} - ${job.jobLink} - ${job.studyTasks}`;
+            ul.appendChild(li);
+        });
 
-// create a variable to get the value of the input from the index.html file
-const button = document.getElementById('add-button'); 
+        listDiv.appendChild(ul);
+        /*const stringifiedJobs = JSON.stringify(jobs);
+        localStorage.setItem('array', stringifiedJobs);
+        const jobsParsed = JSON.parse(stringifiedJobs);
+       */
+        
+    }
 
-const company = document.getElementById('company');
+    // Function to load the jobs from the database:
+    async function loadJobs() {
+        const listDiv = document.getElementById('list-div');
+        // Check if listDiv exists before trying to clear its innerHTML
+        if (listDiv) { 
+            listDiv.innerHTML = ''; 
+        }
 
-const jobTitle = document.getElementById('job-title');
+        try {
+            const response = await fetch('http://localhost:3001/jobs');
+            const jobsData = await response.json();
 
-const jobLink = document.getElementById('job-link');
+            // Check if listDiv exists before appending children in the loop
+            if (listDiv) {
+                jobsData.forEach(job => {
+                    const item = document.createElement('div');
+                    item.className = 'job-item';
+                    item.innerHTML = `
+                        <h3>${job.company} – ${job.jobTitle}</h3>
+                        <p><a href="${job.jobLink}" target="_blank">Job Link</a></p>
+                        <p><strong>Study Tasks:</strong> ${job.studyTasks || 'None yet'}</p>
+                        <small>Created at: ${new Date(job.createdAt).toLocaleString()}</small>
+                    `;
+                    listDiv.appendChild(item);
+                });
+            }
+            
+        } catch(err){
+            console.error('Error loading jobs:', err);
+            // Check if errorBox exists before trying to set textContent
+            if (errorBox) { 
+                errorBox.textContent = 'Error loading jobs from server';
+            }
+        }
+    }
 
-const studyTasks = document.getElementById('study-tasks');
+    // 3. EVENT LISTENERS
+   
 
+    form?.addEventListener('submit', async (event) => {
+        event.preventDefault(); // Stops normal form submit
+    });
 
+    button?.addEventListener('click', function() {
+        console.log("button clicked");
+        // Clear old errors
+        if (errorBox) errorBox.textContent = '';
+        const errors = []; 
 
-//Using the button variable, add an event listener function with params of 'on click' and with another function
-button.addEventListener('click', function() {
+        // Capture input values AT THE TIME of the click
+        const company = document.getElementById('company').value.trim();
+        const jobTitle = document.getElementById('job-title').value.trim();
+        const jobLink = document.getElementById('job-link').value.trim();
+        const studyTasks = document.getElementById('study-tasks').value.trim();
 
-//Uses the .value to take the actual string value of the variables and assign them to these new variables
-    companyName = company.value; 
-    job = jobTitle.value;
-    jobUrl = jobLink.value;
-    studytasks = studyTasks.value;
+        // Form validation
+        if (!company) errors.push('Company is required');
+        if (!jobTitle) errors.push('Job title is required');
+        if (!jobLink) errors.push('Job link is required');
+        if (!studyTasks) errors.push('Study tasks are required');
+        if (jobLink && !jobLink.startsWith('http://') && !jobLink.startsWith('https://')) {
+            errors.push('Job link should start with http:// or https://');
+        }
 
+        if (errors.length > 0) {
+            if (errorBox) errorBox.textContent = errors.join(' ');
+            return; // Stop if there are errors
+        }
 
-//Creates an object, the key values for the object are set to equal to the variables made above.
-    const newJob = {
-    company: companyName,
-    jobTitle: job,
-    url: jobUrl,
-    tasks: studytasks
-};
+        // Create the job object
+        const newJob = {
+            company: company,
+            jobTitle: jobTitle,
+            jobLink: jobLink,
+            studyTasks: studyTasks
+        };
 
-//Finally we use the .push method on the jobs array and add the newJob object to the array
-jobs.push(newJob);
+        // Update local array and UI
+        jobs.push(newJob);
+        jobUpdater(newJob);
 
+        // Perform network request
+        (async () => {
+            try {
+                const response = await fetch('http://localhost:3001/jobs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newJob), // using the current newJob object
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const responseData = await response.json();
+                console.log(responseData);
+            } catch (error) {
+                console.error('Fetch error:', error);
+            }
+        })();
+    });
 
-//Calling the jobUpdater function with the 'newJob' object as the parameter
-jobUpdater(newJob)
-
-
-})
-
-//Create a new function to display array items on webpage
-function jobUpdater () {
-
-/*Create a div in html
-Then clears it by setting it to an empty string 
-(Did this because it was duplicating each job every time a new job was made)*/
-const listDiv = document.getElementById("list-div");
-
-listDiv.innerHTML = ""
-
-
-//Create unordered list in html
-const ul = document.createElement("ul");
-
-
-
-console.log(jobs);
-//Call the jobs array and the forEach array method on the jobs array, 'job' representing each individual array element.
-jobs.forEach(function(job) {
-
-//Create a list item element in html and naming it li in JS
-const li = document.createElement("li");
-
-/*Use the .textContent property on the li element to give the li element strings to put on the page
-
-The value / string assigned to li.textContent is a string literal, calling each key from the jobs array.*/
-li.textContent = `${job.company} - ${job.jobTitle} - ${job.url} - ${job.tasks}`;
-
-//Appending the li element to the ul element
-ul.appendChild(li);
-
-})
-
-//Appending the ul element to the div.
-listDiv.appendChild(ul);
-
-
-const stringifiedJobs = JSON.stringify(jobs);
-
-localStorage.setItem('array', stringifiedJobs);
-
-const jobsParsed = JSON.parse(stringifiedJobs);
-
-li = jobsParsed;
-
-}
-
-
-
-
-
+    // Call loadJobs initially once the DOM is ready
+    loadJobs();
+});
