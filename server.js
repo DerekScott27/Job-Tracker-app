@@ -14,10 +14,21 @@ import { Pool } from 'pg';
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+const allowedOrigins = [
+    // currently using index.html for local testing but I should add http://localhost::port# if I switch to using react 
+
+    'https://dancing-paletas-143806.netlify.app/' //My netlify URL
+    
+];
+
 console.log('DATABASE_URL =', process.env.DATABASE_URL, 'type:', typeof process.env.DATABASE_URL);
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: allowedOrigins,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    credentials: false
+}));
 app.use(express.json()); //Parses JSON bodies
 
 

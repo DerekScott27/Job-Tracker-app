@@ -39,7 +39,11 @@ window.addEventListener('DOMContentLoaded', (event) => {
         }
 
         try {
-            const response = await fetch('http://localhost:3001/jobs');
+            //From the config.js file rn the fetch request to the API_BASE variable which goe to the DB
+            const response = await fetch(`${API_BASE}/jobs`);
+            if (!response.ok) {
+                throw new Error(`HTTP error while loading jobs. status: ${response.status}`);
+            }
             const jobsData = await response.json();
 
             // Check if listDiv exists before appending children in the loop
@@ -114,7 +118,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
         // Perform network request
         (async () => {
             try {
-                const response = await fetch('http://localhost:3001/jobs', {
+                const response = await fetch(`${API_BASE}/jobs`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(newJob), // using the current newJob object
@@ -124,6 +128,9 @@ window.addEventListener('DOMContentLoaded', (event) => {
                 }
                 const responseData = await response.json();
                 console.log(responseData);
+
+                await loadJobs(); //Refreshes from the server to show the latest data immediately 
+
             } catch (error) {
                 console.error('Fetch error:', error);
             }
