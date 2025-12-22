@@ -42,6 +42,16 @@ const pool = new Pool({connectionString: process.env.DATABASE_URL, //Create a va
     ssl: { rejectUnauthorized: false}   //Render Postgres requires SSL
 }); 
 
+await pool.query(                     //Creates the jobs DB table 
+    `CREATE TABLE IF NOT EXISTS jobs(
+    id SERIAL PRIMARY KEY,
+    company TEXT NOT NULL,
+    job_title TEXT NOT NULL,
+    job_link TEXT NOT NULL,
+    study_tasks TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);`
+);
 
 app.get('/', (req, res) => {
     res.json({ message: 'Job Tracker API is running'});
