@@ -28,17 +28,14 @@ app.use(cors({ //.use is an express method which says for any http request that 
     origin: allowedOrigins,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: false
+    credentials: false,
+    optionsSuccessStatus: 204,
+    preflightContinue: false   //This lets cors middlware end OPTIONS
 }));
 app.use(express.json()); //Parses JSON bodies
 
 
-app.options('*', cors({   //For any http request that is ran, run CORS with the below settings. 
-    origin: allowedOrigins,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: false
-}));
+
 //Database Pool
 
 const pool = new Pool({connectionString: process.env.DATABASE_URL,}); //Create a var called pool and its value is a new instance of the Pool class from the pg library
