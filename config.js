@@ -1,4 +1,4 @@
-const isProd = location.hostname.endsWith('https://dancing-paletas-143806.netlify.app/');
+const isProd = location.hostname === 'dancing-paletas-143806.netlify.app' || location.hostname.endsWith('netlify.app');
 
-const API_BASE = isProd ? 'postgresql://postgres_user:66XnTYhiG4gDD7FWMIFPvhPvmRcsDJG6@dpg-d52ru8emcj7s73as7ce0-a.oregon-postgres.render.com/job_tracker_db_9r1l' : 'http://localhost:3001';
+const API_BASE = isProd ? 'https://job-tracker-app-xy4e.onrender.com' : 'http://localhost:3001';
 
