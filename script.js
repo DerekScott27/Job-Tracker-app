@@ -72,6 +72,10 @@ window.addEventListener('DOMContentLoaded', (event) => {
 
     // 3. EVENT LISTENERS
    
+    document.getElementById("submit").addEventListener("submit", e=>{
+        e.preventDefault();
+    })
+
 
     form?.addEventListener('submit', async (event) => {
         event.preventDefault(); // Stops normal form submit
