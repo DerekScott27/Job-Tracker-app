@@ -38,7 +38,9 @@ app.use(express.json()); //Parses JSON bodies
 
 //Database Pool
 
-const pool = new Pool({connectionString: process.env.DATABASE_URL,}); //Create a var called pool and its value is a new instance of the Pool class from the pg library
+const pool = new Pool({connectionString: process.env.DATABASE_URL, //Create a var called pool and its value is a new instance of the Pool class from the pg library
+    ssl: { rejectUnauthorized: false}   //Render Postgres requires SSL
+}); 
 
 
 app.get('/', (req, res) => {
