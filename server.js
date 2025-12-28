@@ -62,12 +62,8 @@ await pool.query(`
   );
 `);
 
-// One-time migration for existing databases (like your Render DB)
-await pool.query(`
-  ALTER TABLE jobs
-  ADD COLUMN IF NOT EXISTS application_status TEXT NOT NULL DEFAULT 'Applied'
-    CHECK (application_status IN ('Applied', 'Interviewed', 'Rejected'));
-`);
+
+
 
 app.get('/', (req, res) => {
     res.json({ message: 'Job Tracker API is running'});
