@@ -17,11 +17,13 @@ const PORT = process.env.PORT || 3001;
 const allowedOrigins = [
     // currently using index.html for local testing but I should add http://localhost::port# if I switch to using react 
 
-    'https://dancing-paletas-143806.netlify.app' //My netlify URL
+    'https://dancing-paletas-143806.netlify.app', //My netlify URL
+    'http://127.0.0.1:5500',
+    'http://localhost:5500'
     
 ];
 
-console.log('DATABASE_URL =', process.env.DATABASE_URL, 'type:', typeof process.env.DATABASE_URL);
+//console.log('DATABASE_URL =', process.env.DATABASE_URL, 'type:', typeof process.env.DATABASE_URL);
 
 // Middleware
 app.use(cors({ //.use is an express method which says for any http request that is ran, run CORS with the below settings.
@@ -37,29 +39,41 @@ app.use(express.json()); //Parses JSON bodies
 
 
 //Database Pool
+const isProduction = process.env.NODE_ENV === 'production';
 
-const pool = new Pool({connectionString: process.env.DATABASE_URL, //Create a var called pool and its value is a new instance of the Pool class from the pg library
-    ssl: { rejectUnauthorized: false}   //Render Postgres requires SSL
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL, //Create a var called pool and its value is a new instance of the Pool class from the pg library
+    ssl: isProduction
+    ? { rejectUnauthorized: false}
+    : false                           //Render Postgres requires SSL
 }); 
 
-await pool.query(                     //Creates the jobs DB table 
-    `CREATE TABLE IF NOT EXISTS jobs(
+// Create table if it doesn't exist (for new environments)
+await pool.query(`
+  CREATE TABLE IF NOT EXISTS jobs(
     id SERIAL PRIMARY KEY,
     company TEXT NOT NULL,
     job_title TEXT NOT NULL,
     job_link TEXT NOT NULL,
+    application_status TEXT NOT NULL DEFAULT 'Applied'
+      CHECK (application_status IN ('Applied', 'Interviewed', 'Rejected')),
     study_tasks TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW()
-);`
-);
+  );
+`);
+
+// One-time migration for existing databases (like your Render DB)
+await pool.query(`
+  ALTER TABLE jobs
+  ADD COLUMN IF NOT EXISTS application_status TEXT NOT NULL DEFAULT 'Applied'
+    CHECK (application_status IN ('Applied', 'Interviewed', 'Rejected'));
+`);
 
 app.get('/', (req, res) => {
     res.json({ message: 'Job Tracker API is running'});
 });
 
-app.listen(PORT, () => {
-    console.log(`Server is listening on port ${PORT}`);
-});
+
 
 
 function validateJob(body){
@@ -68,6 +82,7 @@ function validateJob(body){
     const company = (body.company ?? '').toString().trim();  //If body.company, body.jobTitle, or body.jobLink are null or undefined, they become '' (an empty string).
     const jobTitle = (body.jobTitle ?? '').toString().trim();
     const jobLink = (body.jobLink ?? '').toString().trim();
+    const status = body.applicationStatus;
 
     if(company.length === 0){
         errors.push('Company is required');
@@ -86,6 +101,10 @@ function validateJob(body){
         errors.push('Job link must start with http:// or https://');
     }
 
+    if(!['Applied', 'Interviewed', 'Rejected'].includes(status)){
+        errors.push('Invalid application')
+    }
+
     return errors;
 }
 
@@ -95,9 +114,9 @@ function validateJob(body){
 
 app.post('/jobs', async  (req, res) => {
   console.log('Incoming body:', req.body);
-    const { company, jobTitle, jobLink, studyTasks } = req.body;
+    const { company, jobTitle, jobLink, studyTasks, applicationStatus } = req.body;
 
-    const errors = validateJob({company, jobTitle, jobLink});
+    const errors = validateJob({company, jobTitle, jobLink, applicationStatus});
     if(errors.length > 0){
         return res.status(400).json({ errors });
     }
@@ -105,10 +124,10 @@ app.post('/jobs', async  (req, res) => {
 
 try {
     const result = await pool.query(
-        `INSERT INTO jobs (company, job_title, job_link, study_tasks)
-        VALUES ($1, $2, $3, $4)
+        `INSERT INTO jobs (company, job_title, job_link, study_tasks, application_status)
+        VALUES ($1, $2, $3, $4, $5)
         RETURNING *`,
-        [company, jobTitle, jobLink, studyTasks || null]
+        [company, jobTitle, jobLink, studyTasks || null, applicationStatus]
     );
 
     const job = result.rows[0];
@@ -125,7 +144,7 @@ catch (err){
 app.get('/jobs', async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT id, company, job_title AS "jobTitle", job_link AS "jobLink", study_tasks AS "studyTasks", created_at AS "createdAt"
+      `SELECT id, company, job_title AS "jobTitle", job_link AS "jobLink", study_tasks AS "studyTasks", application_status AS "applicationStatus", created_at AS "createdAt"
       FROM jobs
       ORDER BY created_at DESC`
     );
@@ -134,4 +153,8 @@ app.get('/jobs', async (req, res) => {
     console.error('Error fetching jobs:', err);
     res.status(500).json({error: 'Internal server error'});
   }
+});
+
+app.listen(PORT, () => {
+    console.log(`Server is listening on port ${PORT}`);
 });

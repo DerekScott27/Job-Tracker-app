@@ -3,9 +3,10 @@ window.addEventListener('DOMContentLoaded', (event) => {
     
     // 1. GLOBAL VARIABLES AND STATE
     const jobs = [];
-    const form = document.getElementById('job-form');
+    const form = document.getElementById('submit');
     const button = document.getElementById('add-button');
     const errorBox = document.getElementById('error-box');
+    const checkbox = document.getElementById('applicationStatus');
 
     // 2. CORE FUNCTIONS
     // Create a new function to display array items on webpage
@@ -18,7 +19,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
         console.log(jobs);
         jobs.forEach(function(job) {
             const li = document.createElement("li");
-            li.textContent = `${job.company} - ${job.jobTitle} - ${job.jobLink} - ${job.studyTasks}`;
+            li.textContent = `${job.company} - ${job.jobTitle} - ${job.jobLink} - ${job.studyTasks} -${job.applicationStatus}`;
             ul.appendChild(li);
         });
 
@@ -39,7 +40,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
         }
 
         try {
-            //From the config.js file rn the fetch request to the API_BASE variable which goe to the DB
+            //From the config.js file the fetch request to the API_BASE variable which goes to the DB
             const response = await fetch(`${API_BASE}/jobs`);
             if (!response.ok) {
                 throw new Error(`HTTP error while loading jobs. status: ${response.status}`);
@@ -55,6 +56,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
                         <h3>${job.company} – ${job.jobTitle}</h3>
                         <p><a href="${job.jobLink}" target="_blank">Job Link</a></p>
                         <p><strong>Study Tasks:</strong> ${job.studyTasks || 'None yet'}</p>
+                        <p><strong>Status:</strong> ${job.applicationStatus || 'Applied'}</p>
                         <small>Created at: ${new Date(job.createdAt).toLocaleString()}</small>
                     `;
                     listDiv.appendChild(item);
@@ -72,17 +74,12 @@ window.addEventListener('DOMContentLoaded', (event) => {
 
     // 3. EVENT LISTENERS
    
-    document.getElementById("submit").addEventListener("submit", e=>{
-        e.preventDefault();
-    })
-
+ 
 
     form?.addEventListener('submit', async (event) => {
         event.preventDefault(); // Stops normal form submit
-    });
+    
 
-    button?.addEventListener('click', function() {
-        console.log("button clicked");
         // Clear old errors
         if (errorBox) errorBox.textContent = '';
         const errors = []; 
@@ -92,12 +89,14 @@ window.addEventListener('DOMContentLoaded', (event) => {
         const jobTitle = document.getElementById('job-title').value.trim();
         const jobLink = document.getElementById('job-link').value.trim();
         const studyTasks = document.getElementById('study-tasks').value.trim();
+        const applicationStatus = document.getElementById('applicationStatus')?.value?.trim() || '';
 
         // Form validation
         if (!company) errors.push('Company is required');
         if (!jobTitle) errors.push('Job title is required');
         if (!jobLink) errors.push('Job link is required');
         if (!studyTasks) errors.push('Study tasks are required');
+        if (!applicationStatus) errors.push('Application status is required');
         if (jobLink && !jobLink.startsWith('http://') && !jobLink.startsWith('https://')) {
             errors.push('Job link should start with http:// or https://');
         }
@@ -112,6 +111,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
             company: company,
             jobTitle: jobTitle,
             jobLink: jobLink,
+            applicationStatus: applicationStatus,
             studyTasks: studyTasks
         };
 
@@ -122,6 +122,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
         // Perform network request
         (async () => {
             try {
+                console.log('Making POST to:', `${API_BASE}/jobs`)
                 const response = await fetch(`${API_BASE}/jobs`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },

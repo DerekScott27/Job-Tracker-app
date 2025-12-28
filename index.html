@@ -17,27 +17,36 @@
 </header>
 
 <div id="forms">
-<form id="job-form">
+<form id="submit">
     <label for="company">Company</label>
     <input id="company" name="company" type="text" required minlength="2" >
-</form>
-<form>
+
+
     
     <label for="job-title">Job Title</label>
     <input type="text" id="job-title" name="job-title" required minlength="2" >
 
-</form>
 
-<form>
+
+
     <label for="job-link">Job URL</label>
     <input type="url" id="job-link" name="job-link" required>
-</form>
 
-<form>
+
+
     <label for="study-tasks">Study Tasks</label>
     <textarea id="study-tasks"  name="studyTasks" rows="4" ></textarea> 
-</form>
-<form id="submit">
+
+
+
+    <label for="applicationStatus">Application Status</label>
+    <select id="applicationStatus" name="applicationStatus" required>
+      <option value="">Select status</option>
+      <option value="Applied">Applied</option>
+      <option value="Interviewed">Interviewed</option>
+      <option value="Rejected">No longer in candidacy</option>
+    </select>
+
     <label for="add-button"></label>
     <button type="submit" id="add-button" name="add-button">Add To Job Tracker</button>
 </form>
